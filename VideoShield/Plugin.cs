@@ -182,7 +182,7 @@ public class Plugin : BasePlugin
                     {
                         if (url == null)
                             return;
-                        Engine.Current.InputInterface.Clipboard?.SetText(url.ToString()
+                        Engine.Current.InputInterface.Clipboard?.SetText(url.ToString());
                     };
 
                     slot.PositionInFrontOfUser(float3.Backward);
