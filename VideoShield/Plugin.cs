@@ -71,13 +71,13 @@ public class Plugin : BasePlugin
                         if (inner.IsCanceled) tcs.TrySetCanceled();
                         else if (inner.IsFaulted) tcs.TrySetException(inner.Exception);
                         else tcs.TrySetResult(inner.Result);
-                    });
+                    }, cancellationToken);
                 }
                 catch (Exception ex)
                 {
                     tcs.TrySetException(ex);
                 }
-            });
+            }, cancellationToken);
 
             return false;
         }
@@ -102,7 +102,7 @@ public class Plugin : BasePlugin
                 }
 
                 Accepted.Add(__instance, true);
-                MethodInfo orig = AccessTools.Method(typeof(VideoTextureProvider), "LoadFromStreamURL");
+                MethodInfo orig = AccessTools.Method(typeof(VideoTextureProvider), "LoadFromAsset");
                 ValueTask vt = (ValueTask)orig.Invoke(__instance, new object[] { assetURL })!;
 
                 vt.AsTask().ContinueWith(delegate { tcs.TrySetResult(true); });
@@ -167,14 +167,14 @@ public class Plugin : BasePlugin
                     allow.LocalPressed += (_, _) =>
                     {
                         tcs.TrySetResult(true);
-                        slot?.Destroy();
+                        Userspace.UserspaceWorld.RunSynchronously(() => slot?.Destroy());
                     };
 
                     Button deny = uiBuilder.Button("Security.HostAccess.Deny".AsLocaleKey(), RadiantUI_Constants.Sub.RED);
                     deny.LocalPressed += (_, _) =>
                     {
                         tcs.TrySetResult(false);
-                        slot?.Destroy();
+                        Userspace.UserspaceWorld.RunSynchronously(() => slot?.Destroy());
                     };
 
                     Button copy = uiBuilder.Button("Copy", RadiantUI_Constants.Sub.PURPLE);
@@ -190,14 +190,14 @@ public class Plugin : BasePlugin
                     Task.Delay(TimeSpan.FromSeconds(OptInTimeout.Value), token).ContinueWith(_ =>
                     {
                         tcs.TrySetResult(false);
-                        slot?.Destroy();
+                        Userspace.UserspaceWorld.RunSynchronously(() => slot?.Destroy());
                     }, token);
                 }, true);
             }
             catch (Exception e)
             {
                 Log.LogError($"Error in Whitelist: {e}");
-                slot?.Destroy();
+                Userspace.UserspaceWorld.RunSynchronously(() => slot?.Destroy());
                 tcs.TrySetResult(false);
             }
 
